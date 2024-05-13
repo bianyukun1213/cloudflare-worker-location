@@ -1,16 +1,27 @@
-const corsHeaders = {
-  // What headers are allowed. * is wildcard. Instead of using '*', you can specify a list of specific headers that are allowed, such as: Access-Control-Allow-Headers: X-Requested-With, Content-Type, Accept, Authorization.
-  'Access-Control-Allow-Headers': '*',
-  // Allowed methods. Others could be GET, PUT, DELETE etc.
-  'Access-Control-Allow-Methods': '*',
-  // This is URLs that are allowed to access the server. * is the wildcard character meaning any URL can.
-  'Access-Control-Allow-Origin': '*',
-};
+function calculateCorsHeaders(request) {
+  const allowedOriginHostnames = [];
+  if (request.headers.get('Origin')) {
+    try {
+      const originUrl = new URL(request.headers.get('Origin'));
+      if (allowedOriginHostnames.includes(originUrl.hostname.toLowerCase()))
+        return {
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Allow-Methods': '*',
+          'Access-Control-Allow-Origin': request.headers.get('Origin')
+        };
+      else
+        return {};
+    } catch (error) {
+      return {};
+    }
+  }
+  return {};
+}
 
 async function handleRequest(request) {
   if (request.method === 'OPTIONS') {
     return new Response('OK', {
-      headers: corsHeaders
+      headers: calculateCorsHeaders(request)
     });
   }
   return getLocation(request);
@@ -20,6 +31,7 @@ async function getLocation(request) {
   const response = {};
   if (request.cf) {
     const cf = request.cf;
+    if (request.headers.get('cf-connecting-ip')) response.ip = request.headers.get('cf-connecting-ip');
     if (cf.continent) response.continent = cf.continent;
     if (cf.longitude) response.longitude = cf.longitude;
     if (cf.latitude) response.latitude = cf.latitude;
@@ -36,7 +48,7 @@ async function getLocation(request) {
   return new Response(JSON.stringify(response), {
     headers: {
       'Content-Type': 'application/json',
-      ...corsHeaders,
+      ...calculateCorsHeaders(request),
     }
   });
 }
