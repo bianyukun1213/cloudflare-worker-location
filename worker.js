@@ -1,5 +1,9 @@
 function calculateCorsHeaders(request) {
-  const allowedOriginHostnames = [];
+  const allowedOriginHostnames = [
+    /^([\w-]+\.)*yinhe\.dev$/i,
+    /^([\w-]+\.)*hollisdevhub\.com$/i,
+    /^([\w-]+\.)*his2nd\.life$/i
+  ];
   const origin = request.headers.get('Origin');
   if (origin) {
     try {
@@ -49,7 +53,8 @@ async function getLocation(request) {
   const response = {};
   if (request.cf) {
     const cf = request.cf;
-    if (request.headers.get('cf-connecting-ip')) response.ip = request.headers.get('cf-connecting-ip');
+    const ip = request.headers.get('cf-connecting-ip');
+    if (ip) response.ip = ip;
     if (cf.continent) response.continent = cf.continent;
     if (cf.longitude) response.longitude = cf.longitude;
     if (cf.latitude) response.latitude = cf.latitude;
