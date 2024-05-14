@@ -67,7 +67,7 @@ async function getLocation(request) {
   return new Response(JSON.stringify(response), {
     headers: {
       'Content-Type': 'application/json',
-      ...corsHeaders,
+      ...corsHeaders
     }
   });
 }
