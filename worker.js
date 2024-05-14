@@ -50,7 +50,10 @@ async function getLocation(request) {
   if (request.cf) {
     const cf = request.cf;
     const ip = request.headers.get('cf-connecting-ip');
+    const ua = request.headers.get('User-Agent');
     if (ip) response.ip = ip;
+    if (ua) response.userAgent = ua;
+    if (cf.asn) response.asn = cf.asn;
     if (cf.asOrganization) response.asOrganization = cf.asOrganization;
     if (cf.continent) response.continent = cf.continent;
     if (cf.longitude) response.longitude = cf.longitude;
