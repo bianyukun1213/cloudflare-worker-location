@@ -53,7 +53,6 @@ async function getLocation(request) {
     if (cf.continent) response.continent = cf.continent;
     if (cf.longitude) response.longitude = cf.longitude;
     if (cf.latitude) response.latitude = cf.latitude;
-    if (cf.latitude) response.latitude = cf.latitude;
     if (cf.country) response.country = cf.country;
     if (cf.isEUCountry) response.isEUCountry = cf.isEUCountry;
     if (cf.city) response.city = cf.city;
