@@ -1,33 +1,51 @@
 function calculateCorsHeaders(request) {
   const allowedOriginHostnames = [];
-  if (request.headers.get('Origin')) {
+  const origin = request.headers.get('Origin');
+  if (origin) {
     try {
-      const originUrl = new URL(request.headers.get('Origin'));
-      if (allowedOriginHostnames.includes(originUrl.hostname.toLowerCase()))
-        return {
-          'Access-Control-Allow-Headers': '*',
-          'Access-Control-Allow-Methods': '*',
-          'Access-Control-Allow-Origin': request.headers.get('Origin')
-        };
-      else
-        return {};
+      const originUrl = new URL(origin);
+      for (const originHostnameRegex of allowedOriginHostnames)
+        if (originHostnameRegex.test(originUrl.hostname))
+          return {
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': '*',
+            'Access-Control-Allow-Origin': origin
+          };
+      return;
     } catch (error) {
-      return {};
+      return;
     }
   }
-  return {};
+  return;
+}
+
+function calculateUserAgent(request) {
+  const allowedUserAgents = [];
+  const ua = request.headers.get('User-Agent');
+  if (ua) {
+    for (const userAgentRegex of allowedUserAgents)
+      if (userAgentRegex.test(ua))
+        return true;
+    return false;
+  }
+  return false;
 }
 
 async function handleRequest(request) {
   if (request.method === 'OPTIONS') {
     return new Response('OK', {
-      headers: calculateCorsHeaders(request)
+      headers: calculateCorsHeaders(request) || {}
     });
   }
   return getLocation(request);
 }
 
 async function getLocation(request) {
+  const corsHeaders = calculateCorsHeaders(request);
+  if (!corsHeaders && !calculateUserAgent(request))
+    return new Response('Forbidden', {
+      status: 403
+    });
   const response = {};
   if (request.cf) {
     const cf = request.cf;
@@ -48,7 +66,7 @@ async function getLocation(request) {
   return new Response(JSON.stringify(response), {
     headers: {
       'Content-Type': 'application/json',
-      ...calculateCorsHeaders(request),
+      ...corsHeaders,
     }
   });
 }
